@@ -13,9 +13,9 @@
  * queries, when we receive a "Cache Tags Invalidation" webhook from DatoCMS.
  */
 
-import { createClient } from '@libsql/client';
+import { createClient } from "@libsql/client";
 
-import type { CacheTag } from './cache-tags';
+import type { CacheTag } from "./cache-tags";
 
 /*
  * Creates and returns a Turso database client. Note the custom fetch method
@@ -27,7 +27,7 @@ const database = () =>
     url: process.env.TURSO_DATABASE_URL!,
     authToken: process.env.TURSO_AUTH_TOKEN!,
     fetch: (input: string | URL, init?: RequestInit) => {
-      return fetch(input, { ...init, cache: 'no-store' });
+      return fetch(input, { ...init, cache: "no-store" });
     },
   });
 
@@ -36,7 +36,7 @@ const database = () =>
  * It's useful for constructing SQL queries with varying numbers of parameters.
  */
 function sqlPlaceholders(count: number) {
-  return Array.from({ length: count }, () => '?').join(',');
+  return Array.from({ length: count }, () => "?").join(",");
 }
 
 /*
@@ -47,23 +47,33 @@ function sqlPlaceholders(count: number) {
  */
 export async function storeQueryCacheTags(
   queryId: string,
-  cacheTags: CacheTag[],
+  cacheTags: CacheTag[]
 ) {
-  await database().execute({
-    sql: `
+  if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) {
+    console.warn("TURSO_DATABASE_URL or TURSO_AUTH_TOKEN is not set");
+    return;
+  }
+
+  try {
+    await database().execute({
+      sql: `
       INSERT INTO query_cache_tags (query_id, cache_tag)
-      VALUES ${cacheTags.map(() => '(?, ?)').join(', ')}
-      ON CONFLICT DO NOTHING
+      VALUES ${cacheTags.map(() => "(?, ?)").join(", ")}
+      ON CONFLICT(query_id, cache_tag) DO NOTHING
     `,
-    args: cacheTags.flatMap((cacheTag) => [queryId, cacheTag]),
-  });
+      args: cacheTags.flatMap((cacheTag) => [queryId, cacheTag]),
+    });
+  } catch (error) {
+    // Log the error but don't throw it to prevent frontend from breaking
+    console.error("Error storing cache tags:", error);
+  }
 }
 
 /*
  * Retrieves the query hashs associated with specified cache tags.
  */
 export async function queriesReferencingCacheTags(
-  cacheTags: CacheTag[],
+  cacheTags: CacheTag[]
 ): Promise<string[]> {
   const { rows } = await database().execute({
     sql: `
@@ -94,5 +104,5 @@ export async function deleteQueries(queryIds: string[]) {
  * Wipes out all data contained in the table.
  */
 export async function truncateAssociationsTable() {
-  await database().execute('DELETE FROM query_cache_tags');
+  await database().execute("DELETE FROM query_cache_tags");
 }

@@ -1,12 +1,12 @@
-import { rawExecuteQuery } from '@datocms/cda-client';
-import type { TadaDocumentNode } from 'gql.tada';
-import { print } from 'graphql';
+import { rawExecuteQuery } from "@datocms/cda-client";
+import type { TadaDocumentNode } from "gql.tada";
+import { print } from "graphql";
 
 // biome-ignore lint/style/useNodejsImportProtocol: https://github.com/datocms/nextjs-with-cache-tags-starter/issues/2
-import { createHash } from 'crypto';
-import { cache } from 'react';
-import { parseXCacheTagsResponseHeader } from './cache-tags';
-import { storeQueryCacheTags } from './database';
+import { createHash } from "crypto";
+import { cache } from "react";
+import { parseXCacheTagsResponseHeader } from "./cache-tags";
+import { storeQueryCacheTags } from "./database";
 
 /*
  * Executes a GraphQL query using the DatoCMS Content Delivery API, and caches
@@ -26,10 +26,10 @@ import { storeQueryCacheTags } from './database';
  */
 async function executeQueryWithoutMemoization<
   Result = unknown,
-  Variables = Record<string, unknown>,
+  Variables = Record<string, unknown>
 >(query: TadaDocumentNode<Result, Variables>, variables?: Variables) {
   if (!query) {
-    throw new Error('Query is not valid');
+    throw new Error("Query is not valid");
   }
 
   const queryId = generateQueryId(query, variables);
@@ -40,19 +40,27 @@ async function executeQueryWithoutMemoization<
     returnCacheTags: true,
     variables,
     requestInitOptions: {
-      cache: 'force-cache',
+      cache: "force-cache",
       next: {
         tags: [queryId],
       },
     },
   });
 
+  // Log cache status
+  const cacheStatus = response.headers.get("x-cache");
+  console.log("Cache Status:", cacheStatus);
+  console.log(
+    "Response Headers:",
+    Object.fromEntries(response.headers.entries())
+  );
+
   /**
    * Converts the cache tags string from the headers into an array of CacheTag
    * type.
    */
   const cacheTags = parseXCacheTagsResponseHeader(
-    response.headers.get('x-cache-tags'),
+    response.headers.get("x-cache-tags")
   );
 
   await storeQueryCacheTags(queryId, cacheTags);
@@ -70,12 +78,12 @@ async function executeQueryWithoutMemoization<
  */
 function generateQueryId<Result = unknown, Variables = Record<string, unknown>>(
   query: TadaDocumentNode<Result, Variables>,
-  variables?: Variables,
+  variables?: Variables
 ) {
-  return createHash('sha1')
+  return createHash("sha1")
     .update(print(query))
-    .update(JSON.stringify(variables) || '')
-    .digest('hex');
+    .update(JSON.stringify(variables) || "")
+    .digest("hex");
 }
 
 /*
@@ -93,7 +101,7 @@ function generateQueryId<Result = unknown, Variables = Record<string, unknown>>(
  * https://react.dev/reference/react/cache
  */
 export const executeQuery = cacheWithDeepCompare(
-  executeQueryWithoutMemoization,
+  executeQueryWithoutMemoization
 );
 
 /*
@@ -103,7 +111,7 @@ export const executeQuery = cacheWithDeepCompare(
  * a deep equality comparison.
  */
 function cacheWithDeepCompare<A extends unknown[], R>(
-  fn: (...args: A) => R,
+  fn: (...args: A) => R
 ): (...args: A) => R {
   const cachedFn = cache((serialized: string) => {
     return fn(...JSON.parse(serialized));
