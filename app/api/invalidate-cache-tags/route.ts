@@ -14,44 +14,45 @@
  *
  * Read more: https://www.datocms.com/docs/content-delivery-api/cache-tags#step-3-implement-the-invalidate-cache-tag-webhook
  */
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
-import type { CacheTag } from '@/lib/cache-tags';
-import { deleteQueries, queriesReferencingCacheTags } from '@/lib/database';
-import { revalidateTag } from 'next/cache';
+import type { CacheTag } from "@/lib/cache-tags";
+import { deleteQueries, queriesReferencingCacheTags } from "@/lib/database";
+import { revalidateTag } from "next/cache";
 
-export const dynamic = 'force-dynamic'; // defaults to auto
+export const dynamic = "force-dynamic"; // defaults to auto
 
 type CdaCacheTagsInvalidateWebhook = {
-  entity_type: 'cda_cache_tags';
-  event_type: 'invalidate';
+  entity_type: "cda_cache_tags";
+  event_type: "invalidate";
   entity: {
-    id: 'cda_cache_tags';
-    type: 'cda_cache_tags';
+    id: "cda_cache_tags";
+    type: "cda_cache_tags";
     attributes: {
       // The array of DatoCMS Cache Tags that need to be invalidated
       tags: CacheTag[];
     };
   };
 };
+``;
 
 export async function POST(request: Request) {
-  if (request.headers.get('Webhook-Token') !== process.env.WEBHOOK_TOKEN) {
+  if (
+    request.headers.get("Webhook-Token") !==
+    process.env.NEXT_PUBLIC_WEBHOOK_TOKEN
+  ) {
     return NextResponse.json(
       {
         error:
-          'You need to provide a secret token in the `Webhook-Token` header for this endpoint.',
+          "You need to provide a secret token in the `Webhook-Token` header for this endpoint.",
       },
-      { status: 401 },
+      { status: 401 }
     );
   }
 
   const data = (await request.json()) as CdaCacheTagsInvalidateWebhook;
-
   const cacheTags = data.entity.attributes.tags;
-
   const queryIds = await queriesReferencingCacheTags(cacheTags);
-
   await deleteQueries(queryIds);
 
   for (const queryId of queryIds) {
@@ -64,6 +65,7 @@ export async function POST(request: Request) {
      * The next time someone requests any of these outdated entries, the cache
      * will respond with a MISS.
      */
+    console.log("__REVALIDATING TAG__", queryId);
     revalidateTag(queryId);
   }
   return NextResponse.json({ cacheTags, queryIds });

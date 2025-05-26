@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { executeQuery } from "@/lib/fetch-content";
 import { graphql } from "@/lib/graphql";
+import InvalidateButton from "@/components/InvalidateButton";
 
 const RECENT_POSTS_QUERY = graphql(`
   query RecentPosts {
@@ -18,11 +19,12 @@ export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const { data, cacheTags } = await executeQuery(RECENT_POSTS_QUERY);
-
+  console.log("cacheTags", cacheTags);
   const { recentPosts } = data;
 
   return (
     <>
+      <InvalidateButton cacheTags={cacheTags} />
       <hgroup>
         <p>
           <small>

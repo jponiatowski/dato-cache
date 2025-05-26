@@ -4,21 +4,21 @@
  * DatoCMS that will notify Next.js at every cache tag invalidation event.
  */
 
-import { ApiError, type Client, buildClient } from '@datocms/cma-client';
-import { NextResponse } from 'next/server';
+import { ApiError, type Client, buildClient } from "@datocms/cma-client";
+import { NextResponse } from "next/server";
 
-export const dynamic = 'force-dynamic'; // defaults to auto
+export const dynamic = "force-dynamic"; // defaults to auto
 
 const cors = {
   headers: {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'OPTIONS, POST',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "OPTIONS, POST",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
   },
 };
 
 export async function OPTIONS() {
-  return new Response('OK', cors);
+  return new Response("OK", cors);
 }
 
 export async function POST(request: Request) {
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
           request: error.request,
           response: error.response,
         },
-        { status: 500, ...cors },
+        { status: 500, ...cors }
       );
     }
 
@@ -51,23 +51,23 @@ export async function POST(request: Request) {
 
 async function createCacheInvalidationWebhook(client: Client, baseUrl: string) {
   await client.webhooks.create({
-    name: '🔄 Invalidate pages using cache tags',
-    url: new URL('/api/invalidate-cache-tags', baseUrl).toString(),
+    name: "🔄 Invalidate pages using cache tags",
+    url: new URL("/api/invalidate-cache-tags", baseUrl).toString(),
     custom_payload: null,
     headers: {
-      'Webhook-Token': process.env.WEBHOOK_TOKEN,
+      "Webhook-Token": process.env.NEXT_PUBLIC_WEBHOOK_TOKEN,
     },
     events: [
       {
         filters: [],
-        entity_type: 'cda_cache_tags',
-        event_types: ['invalidate'],
+        entity_type: "cda_cache_tags",
+        event_types: ["invalidate"],
       },
     ],
     http_basic_user: null,
     http_basic_password: null,
     enabled: true,
-    payload_api_version: '3',
+    payload_api_version: "3",
     nested_items_in_payload: false,
   });
 }

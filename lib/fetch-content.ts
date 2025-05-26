@@ -33,7 +33,11 @@ async function executeQueryWithoutMemoization<
   }
 
   const queryId = generateQueryId(query, variables);
-
+  console.log("TAGS", {
+    next: {
+      tags: [queryId],
+    },
+  });
   const [data, response] = await rawExecuteQuery(query, {
     token: process.env.PUBLIC_DATOCMS_API_TOKEN!,
     excludeInvalid: true,
@@ -48,8 +52,8 @@ async function executeQueryWithoutMemoization<
   });
 
   // Log cache status
-  const cacheStatus = response.headers.get("x-cache");
-  console.log("Cache Status:", cacheStatus);
+  // const cacheStatus = response.headers.get("x-cache");
+  // console.log("Cache Status:", cacheStatus);
   console.log(
     "Response Headers:",
     Object.fromEntries(response.headers.entries())

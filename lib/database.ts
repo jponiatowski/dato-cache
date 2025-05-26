@@ -24,10 +24,12 @@ import type { CacheTag } from "./cache-tags";
  */
 const database = () =>
   createClient({
-    url: process.env.TURSO_DATABASE_URL!,
-    authToken: process.env.TURSO_AUTH_TOKEN!,
+    // syncUrl: process.env.TURSO_DATABASE_URL,
+    // url: process.env.TURSO_DATABASE_URL!,
+    // authToken: process.env.TURSO_AUTH_TOKEN!,
+    url: "file:local.db",
     fetch: (input: string | URL, init?: RequestInit) => {
-      return fetch(input, { ...init, cache: "no-store" });
+      return fetch(input, { ...init });
     },
   });
 
@@ -54,6 +56,20 @@ export async function storeQueryCacheTags(
     return;
   }
 
+  // Early return if no cache tags provided
+  if (!cacheTags || cacheTags.length === 0) {
+    return;
+  }
+
+  //   await database().execute({
+  //     sql: `CREATE TABLE IF NOT EXISTS query_cache_tags (
+  //   query_id TEXT NOT NULL,
+  //   cache_tag TEXT NOT NULL,
+  //   PRIMARY KEY (query_id, cache_tag)
+  // )`,
+  //     args: [],
+  //   });
+
   try {
     await database().execute({
       sql: `
@@ -75,34 +91,48 @@ export async function storeQueryCacheTags(
 export async function queriesReferencingCacheTags(
   cacheTags: CacheTag[]
 ): Promise<string[]> {
-  const { rows } = await database().execute({
-    sql: `
+  // Early return if no cache tags provided
+
+  try {
+    const { rows } = await database().execute({
+      sql: `
       SELECT DISTINCT query_id
       FROM query_cache_tags
       WHERE cache_tag IN (${sqlPlaceholders(cacheTags.length)})
-    `,
-    args: cacheTags,
-  });
-
-  return rows.map((row) => row.query_id as string);
+      `,
+      args: cacheTags,
+    });
+    return rows.map((row) => row.query_id as string);
+  } catch (error) {
+    // console.error("Error retrieving queries referencing cache tags:", error);
+    return [];
+  }
 }
 
 /*
  * Removes all entries that reference the specified queries.
  */
 export async function deleteQueries(queryIds: string[]) {
-  await database().execute({
-    sql: `
+  try {
+    await database().execute({
+      sql: `
       DELETE FROM query_cache_tags
       WHERE query_id IN (${sqlPlaceholders(queryIds.length)})
     `,
-    args: queryIds,
-  });
+      args: queryIds,
+    });
+  } catch (error) {
+    // console.error("Error deleting queries:", error);
+  }
 }
 
 /*
  * Wipes out all data contained in the table.
  */
 export async function truncateAssociationsTable() {
-  await database().execute("DELETE FROM query_cache_tags");
+  try {
+    await database().execute("DELETE FROM query_cache_tags");
+  } catch (error) {
+    // console.error("Error truncating associations table:", error);
+  }
 }

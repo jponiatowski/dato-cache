@@ -10,7 +10,7 @@
       "type": "datocmsAccessToken",
       "tokenName": "GraphQL API Token"
     },
-    "WEBHOOK_TOKEN": {
+    "NEXT_PUBLIC_WEBHOOK_TOKEN": {
       "type": "string",
       "value": "secretTokenProtectingWebhookEndpointFromBeingCalledByAnyone"
     }

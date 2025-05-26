@@ -16,6 +16,7 @@
     "@datocms/cma-client": "^3.3.2",
     "@libsql/client": "^0.6.2",
     "@netlify/plugin-nextjs": "^5.3.3-canary-no-cache-fix.0",
+    "dotenv": "^16.5.0",
     "gql.tada": "^1.7.5",
     "next": "14.2.3",
     "react": "^18",
