@@ -50,7 +50,6 @@ async function executeQueryWithoutMemoization<
 
   // Log cache status
   const cacheStatus = response.headers.get("cf-cache-status");
-  console.log("Cache Status:", cacheStatus, new Date().toISOString());
   // console.log(
   //   "Response Headers:",
   //   Object.fromEntries(response.headers.entries())

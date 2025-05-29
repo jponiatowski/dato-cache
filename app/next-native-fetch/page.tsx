@@ -31,15 +31,6 @@ const getData = async () => {
       }),
     });
 
-    console.log({
-      timestamp: new Date().toISOString(),
-      status: response.status,
-      cacheControl: response.headers.get("cache-control"),
-      age: response.headers.get("age"),
-      xCache: response.headers.get("x-cache"),
-      cfCacheStatus: response.headers.get("cf-cache-status"),
-    });
-
     const data = await response.json();
     console.log(`✅ Data received at: ${new Date().toISOString()}`);
 
