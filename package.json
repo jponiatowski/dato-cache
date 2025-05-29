@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "VERCEL_CONSOLE_LOGS=1 next dev",
+    "build": "VERCEL_CONSOLE_LOGS=1 next build",
+    "start": "VERCEL_CONSOLE_LOGS=1 next start",
     "lint": "next lint",
     "generate-schema": "dotenv -c -- bash -c 'gql.tada generate schema https://graphql.datocms.com --header \"X-Exclude-Invalid: true\" --header \"Authorization: $PUBLIC_DATOCMS_API_TOKEN\"'",
     "format": "biome check . --write --unsafe --diagnostic-level=error && biome format --diagnostic-level=error --write .",

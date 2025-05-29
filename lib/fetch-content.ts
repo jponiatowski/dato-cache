@@ -33,11 +33,7 @@ async function executeQueryWithoutMemoization<
   }
 
   const queryId = generateQueryId(query, variables);
-  console.log("TAGS", {
-    next: {
-      tags: [queryId],
-    },
-  });
+
   const [data, response] = await rawExecuteQuery(query, {
     token: process.env.PUBLIC_DATOCMS_API_TOKEN!,
     excludeInvalid: true,
@@ -45,6 +41,7 @@ async function executeQueryWithoutMemoization<
     variables,
     requestInitOptions: {
       cache: "force-cache",
+
       next: {
         tags: [queryId],
       },
@@ -52,12 +49,12 @@ async function executeQueryWithoutMemoization<
   });
 
   // Log cache status
-  // const cacheStatus = response.headers.get("x-cache");
-  // console.log("Cache Status:", cacheStatus);
-  console.log(
-    "Response Headers:",
-    Object.fromEntries(response.headers.entries())
-  );
+  const cacheStatus = response.headers.get("cf-cache-status");
+  console.log("Cache Status:", cacheStatus, new Date().toISOString());
+  // console.log(
+  //   "Response Headers:",
+  //   Object.fromEntries(response.headers.entries())
+  // );
 
   /**
    * Converts the cache tags string from the headers into an array of CacheTag
@@ -73,7 +70,7 @@ async function executeQueryWithoutMemoization<
    * For educational purposes, return tags along with the data. This might not
    * be needed in a real application.
    */
-  return { data, cacheTags };
+  return { data, cacheTags, cacheStatus };
 }
 
 /*

@@ -18,19 +18,27 @@ const RECENT_POSTS_QUERY = graphql(`
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const { data, cacheTags } = await executeQuery(RECENT_POSTS_QUERY);
-  console.log("cacheTags", cacheTags);
+  const { data, cacheTags, cacheStatus } = await executeQuery(
+    RECENT_POSTS_QUERY
+  );
   const { recentPosts } = data;
 
   return (
     <>
-      <InvalidateButton cacheTags={cacheTags} />
+      <div
+        style={{
+          display: "flex",
+          gap: "1rem",
+          flexDirection: "column",
+          marginBottom: "1rem",
+        }}
+      >
+        <div style={{ fontSize: "1.5rem", color: "white" }}>
+          Cache Status: {cacheStatus}
+        </div>
+        <InvalidateButton cacheTags={cacheTags} />
+      </div>
       <hgroup>
-        <p>
-          <small>
-            <mark>Homepage</mark>
-          </small>
-        </p>
         <h1>Recently published</h1>
         <p>
           This page executes a query to fetch and show the 3 most recent posts.
@@ -40,7 +48,7 @@ export default async function Home() {
       <ul>
         {recentPosts.map(({ id, slug, title, _publishedAt }) => (
           <li key={id}>
-            <Link href={`/posts/${slug}`}>{title}</Link>
+            <Link href={`#${slug}`}>{title}</Link>
             {_publishedAt && (
               <>
                 <br />
