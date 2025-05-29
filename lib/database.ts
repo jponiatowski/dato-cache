@@ -81,7 +81,7 @@ export async function storeQueryCacheTags(
     });
   } catch (error) {
     // Log the error but don't throw it to prevent frontend from breaking
-    console.error("Error storing cache tags:", error);
+    // console.error("Error storing cache tags:", error);
   }
 }
 

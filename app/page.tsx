@@ -15,7 +15,7 @@ const RECENT_POSTS_QUERY = graphql(`
   }
 `);
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const { data, cacheTags, cacheStatus } = await executeQuery(

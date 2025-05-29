@@ -1,8 +1,5 @@
 import Link from "next/link";
-
-import { executeQuery } from "@/lib/fetch-content";
-import { graphql } from "@/lib/graphql";
-import InvalidateButton from "@/components/InvalidateButton";
+export const dynamic = "force-dynamic";
 
 const RECENT_POSTS_QUERY = `
   query RecentPosts {
@@ -52,8 +49,6 @@ const getData = async () => {
     throw error;
   }
 };
-
-export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const fetchStartTime = Date.now();
