@@ -49,13 +49,8 @@ const getData = async () => {
   }
 };
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  const { tag } = searchParams;
-  const timestamp = await getData(tag as string);
+export default async function Home() {
+  const timestamp = await getData();
   return (
     <>
       <div
