@@ -24,7 +24,7 @@ const getData = async () => {
         Authorization: `Bearer ${process.env.PUBLIC_DATOCMS_API_TOKEN}`,
       },
       next: {
-        revalidate: 60, // Cache for 60 seconds
+        revalidate: 15, // Cache for 15 seconds
       },
       body: JSON.stringify({
         query: RECENT_POSTS_QUERY,
