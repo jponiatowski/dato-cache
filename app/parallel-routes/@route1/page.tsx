@@ -1,7 +1,7 @@
+import { revalidateTag } from "next/cache";
 import Link from "next/link";
 
 export const dynamic = "force-static";
-export const revalidate = 30;
 
 const RECENT_POSTS_QUERY = `
   query RecentPosts30 {
@@ -26,10 +26,10 @@ const getData = async () => {
       body: JSON.stringify({
         query: RECENT_POSTS_QUERY,
       }),
-      // next: {
-      //   revalidate: 30,
-      //   tags: ["cache-30"],
-      // },
+      next: {
+        revalidate: false,
+        // tags: ["bejamas"],
+      },
     });
 
     const data = await response.json();
@@ -44,11 +44,17 @@ const getData = async () => {
   }
 };
 
+const revalidateData = async () => {
+  "use server";
+  revalidateTag("bejamas");
+};
+
 export default async function Route1() {
   const { recentPosts, timestamp } = await getData();
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <div>30 seconds route {timestamp}</div>
+      <button onClick={revalidateData}>Revalidate</button>
+      <div>revalidate: false route {timestamp}</div>
       <ul>
         {/* @ts-ignore */}
         {recentPosts?.map(({ id, slug, title }) => (

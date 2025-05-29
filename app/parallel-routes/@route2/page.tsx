@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 export const dynamic = "force-static";
-export const revalidate = 15;
 
 const RECENT_POSTS_QUERY = `
   query RecentPosts15 {
@@ -24,10 +23,9 @@ const getData = async () => {
         Authorization: `Bearer ${process.env.PUBLIC_DATOCMS_API_TOKEN}`,
       },
 
-      // next: {
-      //   revalidate: 15,
-      //   tags: ["cache-15"],
-      // },
+      next: {
+        revalidate: 5,
+      },
       body: JSON.stringify({
         query: RECENT_POSTS_QUERY,
       }),

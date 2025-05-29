@@ -1,3 +1,5 @@
+import RevalidateButton from "@/components/revalidate-button";
+import { revalidatePath } from "next/cache";
 import Link from "next/link";
 export const dynamic = "force-dynamic";
 
@@ -12,10 +14,18 @@ const RECENT_POSTS_QUERY = `
   }
 `;
 
+const cacheSettings = {
+  // cache: "no-store",
+  next: {
+    revalidate: 10,
+  },
+};
+
 const getData = async () => {
   try {
-    console.log(`🚀 Making fetch request at: ${new Date().toISOString()}`);
+    // console.log(`🚀 Making fetch request at: ${new Date().toISOString()}`);
 
+    // @ts-ignore
     const response = await fetch("https://graphql.datocms.com/", {
       method: "POST",
       headers: {
@@ -23,16 +33,18 @@ const getData = async () => {
         Accept: "application/json",
         Authorization: `Bearer ${process.env.PUBLIC_DATOCMS_API_TOKEN}`,
       },
-      cache: "force-cache",
+      ...cacheSettings,
       body: JSON.stringify({
         query: RECENT_POSTS_QUERY,
       }),
     });
+    console.log("x-vercel-cache", response.headers.get("x-vercel-cache"));
+    console.log("cache-control", response.headers.get("cache-control"));
+    console.log("cf-cache-status", response.headers.get("cf-cache-status"));
 
     const data = await response.json();
-    console.log(`✅ Data received at: ${new Date().toISOString()}`);
-
-    return data.data;
+    // console.log(`✅ Data received at: ${new Date().toISOString()}`);
+    return { recentPosts: data?.data?.recentPosts || [], cacheSettings };
   } catch (error) {
     console.log(error);
     throw error;
@@ -40,18 +52,7 @@ const getData = async () => {
 };
 
 export default async function Home() {
-  const fetchStartTime = Date.now();
   const { recentPosts } = await getData();
-  const fetchEndTime = Date.now();
-  const fetchDuration = fetchEndTime - fetchStartTime;
-
-  // const { data, cacheTags, cacheStatus } = await executeQuery(
-  //   RECENT_POSTS_QUERY
-  // );
-  // const { recentPosts } = data;
-  // const recentPosts: any[] = [];
-  const cacheStatus = `Fetch took ${fetchDuration}ms`;
-
   return (
     <>
       <div
@@ -62,13 +63,11 @@ export default async function Home() {
           marginBottom: "1rem",
         }}
       >
-        <div style={{ fontSize: "1.5rem", color: "white" }}>
-          Cache Status: {cacheStatus}
-        </div>
-        <div style={{ fontSize: "1rem", color: "lightgray" }}>
-          Page rendered at: {new Date().toISOString()}
-        </div>
-        {/* <InvalidateButton cacheTags={cacheTags} /> */}
+        <h1>Cache Settings</h1>
+        <pre style={{ color: "white" }}>
+          {JSON.stringify(cacheSettings, null, 2)}
+        </pre>
+        <RevalidateButton />
       </div>
       <hgroup>
         <h1>Recently published</h1>
