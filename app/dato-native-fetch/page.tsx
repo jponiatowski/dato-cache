@@ -17,7 +17,7 @@ const RECENT_POSTS_QUERY = `
 const cacheSettings = {
   // cache: "no-store",
   next: {
-    revalidate: 10,
+    revalidate: 60,
   },
 };
 

@@ -12,18 +12,23 @@ const RECENT_POSTS_QUERY = `
   }
 `;
 
+const cacheSettings = {
+  next: {
+    revalidate: 10,
+  },
+};
+
 const getData = async () => {
   try {
-    console.log(`🚀 Making fetch request at: ${new Date().toISOString()}`);
-
     const get = await fetch("https://swapi.info/api/films", {
       method: "GET",
-      cache: "force-cache",
+      ...cacheSettings,
     });
 
-    console.log(get.headers);
+    console.log("x-vercel-cache", get.headers.get("x-vercel-cache"));
+    console.log("cache-control", get.headers.get("cache-control"));
+    console.log("cf-cache-status", get.headers.get("cf-cache-status"));
     const data = await get.json();
-    console.log(`✅ Data received at: ${new Date().toISOString()}`);
 
     return data;
   } catch (error) {
@@ -55,6 +60,10 @@ export default async function Home() {
           marginBottom: "1rem",
         }}
       >
+        <h1>Cache Settings</h1>
+        <pre style={{ color: "white" }}>
+          {JSON.stringify(cacheSettings, null, 2)}
+        </pre>
         <div style={{ fontSize: "1rem", color: "lightgray" }}>
           Page rendered at: {new Date().toISOString()}
         </div>
